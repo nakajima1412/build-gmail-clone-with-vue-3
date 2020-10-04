@@ -26,19 +26,19 @@
 <script>
 import { format } from 'date-fns'
 import axios from 'axios'
+import { ref } from 'vue'
 
 export default {
   async setup() {
     let { data: emails } = await axios.get('http://localhost:3000/emails')
     return {
       format,
-      emails
+      emails: ref(emails)
     }
   },
   computed: {
     sortedEmails() {
-      // eslint-disable-next-line vue/no-side-effects-in-computed-properties
-      return this.emails.sort((e1, e2) => {
+      return this.emails.slice().sort((e1, e2) => {
         return e1.sentAt < e2.sentAt ? 1 : -1
       })
     },
