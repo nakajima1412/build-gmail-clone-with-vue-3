@@ -1,22 +1,28 @@
 <template>
+  <h1>{{ emailSelection.emails.size }} emails selected</h1>
   <table class="mail-table">
     <tbody>
       <tr
         v-for="email in unarchivedEmails"
         :key="email.id"
-        :class="['clickable', email.read ? 'read' : '', 'clickable']"
-        @click="openEmail(email)"
+        :class="['clickable', email.read ? 'read' : '']"
       >
         <td>
-          <input type="checkbox" />
+          <input
+            type="checkbox"
+            @click="emailSelection.toggle(email)"
+            :selected="emailSelection.emails.has(email)"
+          />
         </td>
-        <td>{{ email.from }}</td>
-        <td>
+        <td @click="openEmail(email)">{{ email.from }}</td>
+        <td @click="openEmail(email)">
           <p>
             <strong>{{ email.subject }}</strong> - {{ email.body }}
           </p>
         </td>
-        <td class="date">{{ format(new Date(email.sentAt), 'MMM do yyyy') }}</td>
+        <td class="date" @click="openEmail(email)">
+          {{ format(new Date(email.sentAt), 'MMM do yyyy') }}
+        </td>
         <td><button @click="archiveEmail(email)">Archive</button></td>
       </tr>
     </tbody>
@@ -31,12 +37,24 @@ import { format } from 'date-fns'
 import axios from 'axios'
 import MailView from '@/components/MailView'
 import ModalView from '@/components/ModalView'
-import { ref } from 'vue'
-
+import { ref, reactive } from 'vue'
 export default {
   async setup() {
     let { data: emails } = await axios.get('http://localhost:3000/emails')
+    let selected = reactive(new Set())
+    let emailSelection = {
+      emails: selected,
+      toggle(email) {
+        if (selected.has(email)) {
+          selected.delete(email)
+        } else {
+          selected.add(email)
+        }
+        console.log(selected)
+      }
+    }
     return {
+      emailSelection,
       format,
       emails: ref(emails),
       openedEmail: ref(null)
@@ -96,4 +114,4 @@ export default {
 }
 </script>
 
-<style></style>
+<style scoped></style>
